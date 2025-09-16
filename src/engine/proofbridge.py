@@ -18,7 +18,9 @@ class ProofBridge:
 
         self._csv_file = self.csv_path.open("w", newline="")
         self._writer = csv.DictWriter(
-            self._csv_file, fieldnames=["ts", "glyph", "entropy", "verdict"]
+            self._csv_file,
+            fieldnames=["ts", "glyph", "entropy", "verdict", "regime"],
+            extrasaction="ignore",
         )
         self._writer.writeheader()
 
@@ -31,6 +33,7 @@ class ProofBridge:
             "glyph": capsule.get("glyph"),
             "entropy": capsule.get("entropy"),
             "verdict": capsule.get("verdict", "OPEN"),
+            "regime": capsule.get("regime"),
         }
         self._writer.writerow(row)
         payload = {"ts": ts, **capsule}

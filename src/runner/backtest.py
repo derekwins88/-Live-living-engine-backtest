@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Dict
 
@@ -23,11 +24,23 @@ def run_backtest(data_path: Path | str, params: Dict, outdir: Path | str):
     equity_curve = [cash]
     trades: list[dict] = []
 
+    logging_cfg = params.get("logging", {})
+    blotter_name = logging_cfg.get("BlotterFile", "trades.csv")
+    proof_capsule_name = logging_cfg.get("ProofCapsuleFile", "capsules.jsonl")
+    proof_enabled = bool(logging_cfg.get("EnableProofBridge", True))
+    proof_ledger_name = logging_cfg.get("ProofLedgerFile", "proof_ledger.csv")
+
     strategy.on_start()
-    with ProofBridge(outdir / "proof_ledger.csv", outdir / "capsules.jsonl") as pb:
+    bridge_ctx = (
+        ProofBridge(outdir / proof_ledger_name, outdir / proof_capsule_name)
+        if proof_enabled
+        else nullcontext(None)
+    )
+
+    with bridge_ctx as pb:
         for bar in bars:
             order, capsule = strategy.on_bar(bar)
-            if capsule:
+            if capsule and pb:
                 pb.write_capsule(bar["timestamp"], capsule)
 
             if order:
@@ -50,8 +63,9 @@ def run_backtest(data_path: Path | str, params: Dict, outdir: Path | str):
 
         (outdir / "metrics.json").write_text(json.dumps(metrics, indent=2))
         trades_lines = ["ts,action,px"] + [f"{t['ts']},{t['action']},{t['px']}" for t in trades]
-        (outdir / "trades.csv").write_text("\n".join(trades_lines))
-        summary = make_day_summary(metrics, pb.stats())
+        (outdir / blotter_name).write_text("\n".join(trades_lines))
+        pb_stats = pb.stats() if pb else {"capsules_written": 0}
+        summary = make_day_summary(metrics, pb_stats)
         (outdir / "summary.txt").write_text(summary)
 
     return metrics

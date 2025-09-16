@@ -14,17 +14,20 @@ A lightweight, reproducible harness for running IMM Cognitive Core v11 inspired 
 
 ```bash
 pip install -e .
-leb --data data/sample/sample_ohlcv.csv --out runs/dev
+leb --data data/sample_prices.csv --out runs/dev
 ```
 
 Outputs are written to the specified `--out` directory:
 
 - `metrics.json` — Summary statistics for the equity curve.
-- `trades.csv` — Executed trades from the naive fill model.
+- `trades_blotter.csv` — Executed trades from the naive fill model.
 - `summary.txt` — Book Builder style narrative.
-- `proof_ledger.csv` / `capsules.jsonl` — ProofBridge capsule archives.
+- `proof_ledger.csv` / `proof_capsule.json` — ProofBridge capsule archives.
 
-Default strategy parameters live in [`configs/default.yaml`](configs/default.yaml). Symbol metadata and session information can be extended in [`configs/symbols.yaml`](configs/symbols.yaml).
+The bundled `data/sample_prices.csv` stream includes synthetic entropy readings so you can validate the collapse/P/NP regime
+classifier without wiring in a full market data feed.
+
+Default strategy parameters live in [`configs/default.yaml`](configs/default.yaml) and now mirror the structured `risk`, `entropy`, and `signals` blocks used by production IMM harnesses. Symbol metadata and session information can be extended in [`configs/symbols.yaml`](configs/symbols.yaml).
 
 ## Development
 
