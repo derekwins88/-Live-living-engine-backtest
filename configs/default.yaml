@@ -1,10 +1,28 @@
-starting_cash: 50000
-unit_size: 1
-lookback_fast: 12
-lookback_slow: 48
-atr_period: 14
-entropy_window: 20
-entropy_threshold: 0.015
-entropy_exit: 0.03
-ma_buffer: 0.001
-resample:
+# Default parameters for Living Engine backtests
+risk:
+  RiskPercent: 0.015        # 1.5% of equity per trade
+  RewardRisk: 2.3           # reward-to-risk multiple
+  MaxDailyDrawdown: 0.065   # 6.5% clamp
+
+entropy:
+  CollapseThreshold: 0.09   # ΔΦ ≥ 0.09 ⇒ collapse regime (NP-hard wall)
+  P_threshold: 0.045        # ΔΦ < 0.045 ⇒ P-like stability
+  NP_threshold: 0.09        # ΔΦ > 0.045 and < 0.09 ⇒ NP drift
+  RecoveryWindow: 12        # bars required under NP wall for recovery
+  EntropyLookback: 20       # rolling window for ΔΦ averaging
+
+signals:
+  AtrPeriod: 14
+  EmaFast: 12
+  EmaSlow: 30
+  StopAtrMult: 1.2
+  TrailMult: 0.9
+
+logging:
+  ProofCapsuleFile: "proof_capsule.json"
+  BlotterFile: "trades_blotter.csv"
+  EnableProofBridge: true
+
+sanctuary:
+  EthicsEnabled: true
+  ProofOfCare: true

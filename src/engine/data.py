@@ -1,6 +1,7 @@
 """Utility helpers for loading OHLCV market data."""
 from __future__ import annotations
 
+from numbers import Number
 from pathlib import Path
 from typing import List, MutableMapping
 
@@ -25,7 +26,9 @@ def _normalise_columns(df: pd.DataFrame) -> pd.DataFrame:
     missing = REQUIRED_COLUMNS - set(df.columns)
     if missing:
         raise ValueError(f"missing required columns: {sorted(missing)}")
-    return df[_COLUMN_ORDER]
+
+    ordered = _COLUMN_ORDER + [col for col in df.columns if col not in _COLUMN_ORDER]
+    return df[ordered]
 
 
 def load_ohlcv(path: Path | str, resample: str | None = None) -> List[MutableMapping[str, float]]:
@@ -58,6 +61,8 @@ def load_ohlcv(path: Path | str, resample: str | None = None) -> List[MutableMap
 
     df = df.sort_values("timestamp").reset_index(drop=True)
 
+    extra_columns = [col for col in df.columns if col not in _COLUMN_ORDER]
+
     if resample:
         agg = {
             "open": "first",
@@ -76,16 +81,23 @@ def load_ohlcv(path: Path | str, resample: str | None = None) -> List[MutableMap
 
     records: List[MutableMapping[str, float]] = []
     for row in df.itertuples(index=False):
-        records.append(
-            {
-                "timestamp": row.timestamp.isoformat(),
-                "open": float(row.open),
-                "high": float(row.high),
-                "low": float(row.low),
-                "close": float(row.close),
-                "volume": float(row.volume),
-            }
-        )
+        record = {
+            "timestamp": row.timestamp.isoformat(),
+            "open": float(row.open),
+            "high": float(row.high),
+            "low": float(row.low),
+            "close": float(row.close),
+            "volume": float(row.volume),
+        }
+
+        for column in extra_columns:
+            value = getattr(row, column)
+            if isinstance(value, Number):
+                record[column] = float(value)
+            else:
+                record[column] = value
+
+        records.append(record)
 
     return records
 
