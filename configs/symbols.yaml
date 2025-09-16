@@ -1,0 +1,10 @@
+ES:
+  tick_size: 0.25
+  point_value: 50
+  session_tz: America/Chicago
+  session_hours: "08:30-15:00"
+NQ:
+  tick_size: 0.25
+  point_value: 20
+  session_tz: America/Chicago
+  session_hours: "08:30-15:00"

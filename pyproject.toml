@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "living-engine-backtest"
+version = "0.1.0"
+description = "Backtesting harness for the Living Engine strategy experiments."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas",
+    "pyyaml",
+]
+license = {file = "LICENSE"}
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[project.scripts]
+leb = "runner.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
